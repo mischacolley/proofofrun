@@ -204,7 +204,6 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               />
             </div>
