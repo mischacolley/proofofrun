@@ -147,7 +147,7 @@ export function LeaderboardView() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">
-                  {row.runner.emoji} {row.runner.name}
+                  {row.runner.name} {row.runner.emoji}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   {row.runCount} run{row.runCount === 1 ? "" : "s"}

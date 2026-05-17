@@ -21,7 +21,7 @@ export function RunCard({ run }: { run: RunWithRunner }) {
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex items-center justify-between gap-2">
             <div className="font-medium truncate">
-              {run.runner.emoji} {run.runner.name}
+              {run.runner.name} {run.runner.emoji}
             </div>
             <div className="text-xs text-muted-foreground shrink-0">
               {formatRelative(run.createdAt)}
