@@ -41,13 +41,17 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
 
   // Editable form fields after analysis
   const [distanceKm, setDistanceKm] = useState("");
-  const [durationSeconds, setDurationSeconds] = useState("");
+  const [timeMinutes, setTimeMinutes] = useState("");
+  const [timeSeconds, setTimeSeconds] = useState("");
   const [reaction, setReaction] = useState("");
   const [note, setNote] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
+  const previewUrl = useMemo(
+    () => (file ? URL.createObjectURL(file) : null),
+    [file],
+  );
   useEffect(() => {
     if (!previewUrl) return;
     return () => URL.revokeObjectURL(previewUrl);
@@ -59,7 +63,8 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
     setFile(null);
     setResult(null);
     setDistanceKm("");
-    setDurationSeconds("");
+    setTimeMinutes("");
+    setTimeSeconds("");
     setReaction("");
     setNote("");
     setSubmitting(false);
@@ -85,7 +90,10 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
       const form = new FormData();
       form.append("photo", file);
       form.append("runnerId", runnerId);
-      const res = await fetch("/api/analyse-run", { method: "POST", body: form });
+      const res = await fetch("/api/analyse-run", {
+        method: "POST",
+        body: form,
+      });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error ?? `Analyse failed (${res.status})`);
@@ -93,11 +101,15 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
       const data = (await res.json()) as AnalyseResponse;
       setResult(data);
       setDistanceKm(String(data.distanceKm ?? ""));
-      setDurationSeconds(String(data.durationSeconds ?? ""));
+      const totalSec = Math.max(0, Math.round(data.durationSeconds ?? 0));
+      setTimeMinutes(String(Math.floor(totalSec / 60)));
+      setTimeSeconds(String(totalSec % 60));
       setReaction(data.reaction ?? "");
       setStep("confirm");
       if (data.confidence === "low") {
-        toast.warning("Couldn't read that clearly — check the numbers before you post.");
+        toast.warning(
+          "Couldn't read that clearly — check the numbers before you post.",
+        );
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
@@ -109,13 +121,15 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
   async function handleConfirm() {
     if (!result || !runnerId) return;
     const distance = Number(distanceKm);
-    const duration = Number(durationSeconds);
+    const mins = Number(timeMinutes || 0);
+    const secs = Number(timeSeconds || 0);
+    const duration = mins * 60 + secs;
     if (!Number.isFinite(distance) || distance <= 0) {
       toast.error("Distance has to be a positive number.");
       return;
     }
     if (!Number.isFinite(duration) || duration <= 0) {
-      toast.error("Duration has to be a positive number of seconds.");
+      toast.error("Time has to be more than zero.");
       return;
     }
     setSubmitting(true);
@@ -151,9 +165,11 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
     }
   }
 
+  const totalDurationSeconds =
+    (Number(timeMinutes) || 0) * 60 + (Number(timeSeconds) || 0);
   const pace =
-    Number(distanceKm) > 0 && Number(durationSeconds) > 0
-      ? computePace(Number(distanceKm), Number(durationSeconds))
+    Number(distanceKm) > 0 && totalDurationSeconds > 0
+      ? computePace(Number(distanceKm), totalDurationSeconds)
       : 0;
 
   return (
@@ -170,7 +186,8 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
           </DialogTitle>
           <DialogDescription>
             {step === "pick" && "Pick a runner and upload your run evidence."}
-            {step === "analysing" && "The Proof of Run AI is having a squiz at your photo."}
+            {step === "analysing" &&
+              "The Proof of Run AI is having a squiz at your photo."}
             {step === "confirm" && "Go on then, prove it."}
           </DialogDescription>
         </DialogHeader>
@@ -179,7 +196,10 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Runner</Label>
-              <Select value={runnerId} onValueChange={(v) => setRunnerId(v ?? "")}>
+              <Select
+                value={runnerId}
+                onValueChange={(v) => setRunnerId(v ?? "")}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Who's running?">
                     {(value: string | null) => {
@@ -210,7 +230,11 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
             {previewUrl && (
               <div className="relative w-full aspect-square rounded-md overflow-hidden border bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={previewUrl} alt="preview" className="w-full h-full object-contain" />
+                <img
+                  src={previewUrl}
+                  alt="preview"
+                  className="w-full h-full object-contain"
+                />
               </div>
             )}
           </div>
@@ -219,7 +243,9 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
         {step === "analysing" && (
           <div className="py-8 flex flex-col items-center gap-3 text-center">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
-            <p className="text-sm text-muted-foreground">Verifying proof of run…</p>
+            <p className="text-sm text-muted-foreground">
+              Verifying proof of run…
+            </p>
           </div>
         )}
 
@@ -227,7 +253,13 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
           <div className="space-y-4">
             {result.photoUrl && (
               <div className="relative w-full aspect-square rounded-md overflow-hidden border bg-muted">
-                <Image src={result.photoUrl} alt="run" fill className="object-contain" sizes="(max-width: 768px) 100vw, 400px" />
+                <Image
+                  src={result.photoUrl}
+                  alt="run"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 100vw, 400px"
+                />
               </div>
             )}
             <div className="grid grid-cols-2 gap-3">
@@ -241,23 +273,41 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="duration">Duration (sec)</Label>
-                <Input
-                  id="duration"
-                  inputMode="numeric"
-                  value={durationSeconds}
-                  onChange={(e) => setDurationSeconds(e.target.value)}
-                />
+                <Label>Time</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="time-minutes"
+                    inputMode="numeric"
+                    aria-label="Minutes"
+                    placeholder="min"
+                    value={timeMinutes}
+                    onChange={(e) => setTimeMinutes(e.target.value)}
+                  />
+                  <span className="text-muted-foreground">:</span>
+                  <Input
+                    id="time-seconds"
+                    inputMode="numeric"
+                    aria-label="Seconds"
+                    placeholder="sec"
+                    value={timeSeconds}
+                    onChange={(e) => setTimeSeconds(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
             <div className="text-sm text-muted-foreground">
-              Pace: <span className="font-medium text-foreground">{formatPace(pace)}</span>
+              Pace:{" "}
+              <span className="font-medium text-foreground">
+                {formatPace(pace)}
+              </span>
               {" · "}Source: {result.sourceType}
               {" · "}Confidence: {result.confidence}
             </div>
             <div className="space-y-1">
               <Label>Proof of Run AI reckons</Label>
-              <p className="rounded-md border bg-muted/40 px-3 py-2 text-sm">{reaction}</p>
+              <p className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
+                {reaction}
+              </p>
             </div>
             <div className="space-y-1">
               <Label htmlFor="note">Right of reply (optional)</Label>
