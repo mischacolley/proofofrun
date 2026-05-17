@@ -9,7 +9,7 @@ export function InactiveBanner({ runners }: { runners: Runner[] }) {
           key={r.id}
           className="rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground"
         >
-          Haven&apos;t seen <span className="font-medium text-foreground">{r.emoji} {r.name}</span> all week. Yeah? Nah.
+          Haven&apos;t seen <span className="font-medium text-foreground">{r.name} {r.emoji}</span> all week. Yeah? Nah.
         </div>
       ))}
     </div>
