@@ -13,7 +13,11 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDistance, formatPace } from "@/lib/format";
-import type { LeaderboardPeriod, LeaderboardRow, LeaderboardSort } from "@/lib/types";
+import type {
+  LeaderboardPeriod,
+  LeaderboardRow,
+  LeaderboardSort,
+} from "@/lib/types";
 
 const SORT_LABELS: Record<LeaderboardSort, string> = {
   totalKm: "Total km",
@@ -29,7 +33,9 @@ function statForSort(row: LeaderboardRow, sort: LeaderboardSort): string {
     case "longestRun":
       return formatDistance(row.longestRunKm);
     case "bestPace":
-      return row.bestPaceSecondsPerKm ? formatPace(row.bestPaceSecondsPerKm) : "—";
+      return row.bestPaceSecondsPerKm
+        ? formatPace(row.bestPaceSecondsPerKm)
+        : "—";
     case "currentStreak":
       return row.currentStreakDays === 0
         ? "—"
@@ -46,7 +52,10 @@ export function LeaderboardView() {
   const [period, setPeriod] = useState<LeaderboardPeriod>("week");
   const [sortBy, setSortBy] = useState<LeaderboardSort>("totalKm");
   const requestKey = `${period}:${sortBy}`;
-  const [state, setState] = useState<FetchState>({ status: "loading", key: requestKey });
+  const [state, setState] = useState<FetchState>({
+    status: "loading",
+    key: requestKey,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -56,7 +65,8 @@ export function LeaderboardView() {
         return r.json();
       })
       .then((data: { rows: LeaderboardRow[] }) => {
-        if (!cancelled) setState({ status: "ok", key: requestKey, rows: data.rows });
+        if (!cancelled)
+          setState({ status: "ok", key: requestKey, rows: data.rows });
       })
       .catch((err) => {
         if (!cancelled)
@@ -77,7 +87,10 @@ export function LeaderboardView() {
 
   return (
     <div className="space-y-4">
-      <Tabs value={period} onValueChange={(v) => setPeriod(v as LeaderboardPeriod)}>
+      <Tabs
+        value={period}
+        onValueChange={(v) => setPeriod(v as LeaderboardPeriod)}
+      >
         <TabsList className="w-full grid grid-cols-3">
           <TabsTrigger value="week">This Week</TabsTrigger>
           <TabsTrigger value="month">This Month</TabsTrigger>
@@ -106,7 +119,9 @@ export function LeaderboardView() {
 
       <div className="space-y-2">
         {error && (
-          <div className="rounded-md border border-dashed p-4 text-sm text-destructive">{error}</div>
+          <div className="rounded-md border border-dashed p-4 text-sm text-destructive">
+            {error}
+          </div>
         )}
         {!rows && !error && (
           <>
@@ -117,7 +132,7 @@ export function LeaderboardView() {
         )}
         {rows && rows.length === 0 && (
           <div className="rounded-md border border-dashed p-8 text-center text-muted-foreground">
-            Nobody&apos;s run yet. Yeah nah, prove it.
+            Anybody run yet? Yeah nah, prove it.
           </div>
         )}
         {rows?.map((row, i) => (
@@ -135,7 +150,9 @@ export function LeaderboardView() {
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-semibold tabular-nums">{statForSort(row, sortBy)}</div>
+                <div className="font-semibold tabular-nums">
+                  {statForSort(row, sortBy)}
+                </div>
               </div>
               <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-muted">
                 {row.lastRun?.photoUrl && (

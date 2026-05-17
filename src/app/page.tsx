@@ -41,7 +41,7 @@ export default async function Home() {
       <div className="space-y-3">
         {enriched.length === 0 ? (
           <div className="rounded-md border border-dashed p-8 text-center text-muted-foreground">
-            Nobody&apos;s run yet. Yeah nah, prove it.
+            Anybody run yet? Yeah nah, prove it.
           </div>
         ) : (
           enriched.map((run) => <RunCard key={run.id} run={run} />)
