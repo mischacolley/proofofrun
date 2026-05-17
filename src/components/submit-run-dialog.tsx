@@ -165,13 +165,13 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
         <DialogHeader>
           <DialogTitle>
             {step === "pick" && "Show us then"}
-            {step === "analysing" && "Show us then..."}
-            {step === "confirm" && "Reckon this looks right?"}
+            {step === "analysing" && "Verifying proof of run…"}
+            {step === "confirm" && "Stand by ya numbers"}
           </DialogTitle>
           <DialogDescription>
             {step === "pick" && "Pick a runner and upload your run evidence."}
-            {step === "analysing" && "Claude's having a squiz at the photo."}
-            {step === "confirm" && "Tweak anything that's off, then post it."}
+            {step === "analysing" && "The Proof of Run AI is having a squiz at your photo."}
+            {step === "confirm" && "Go on then, prove it."}
           </DialogDescription>
         </DialogHeader>
 
@@ -219,7 +219,7 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
         {step === "analysing" && (
           <div className="py-8 flex flex-col items-center gap-3 text-center">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
-            <p className="text-sm text-muted-foreground">Reading the numbers off your photo…</p>
+            <p className="text-sm text-muted-foreground">Verifying proof of run…</p>
           </div>
         )}
 
@@ -256,18 +256,17 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
               {" · "}Confidence: {result.confidence}
             </div>
             <div className="space-y-1">
-              <Label htmlFor="reaction">Claude reckons</Label>
-              <textarea
-                id="reaction"
-                rows={3}
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-                value={reaction}
-                onChange={(e) => setReaction(e.target.value)}
-              />
+              <Label>Proof of Run AI reckons</Label>
+              <p className="rounded-md border bg-muted/40 px-3 py-2 text-sm">{reaction}</p>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="note">Note (optional)</Label>
-              <Input id="note" value={note} onChange={(e) => setNote(e.target.value)} />
+              <Label htmlFor="note">Right of reply (optional)</Label>
+              <Input
+                id="note"
+                placeholder="Got something to say?"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
             </div>
           </div>
         )}
@@ -275,7 +274,7 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
         <DialogFooter>
           {step === "pick" && (
             <Button onClick={handleAnalyse} disabled={!runnerId || !file}>
-              Analyse photo
+              Verify proof of run
             </Button>
           )}
           {step === "confirm" && (
