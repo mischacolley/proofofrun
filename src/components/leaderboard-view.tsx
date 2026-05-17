@@ -105,7 +105,11 @@ export function LeaderboardView() {
           onValueChange={(v) => v && setSortBy(v as LeaderboardSort)}
         >
           <SelectTrigger className="w-[180px]">
-            <SelectValue />
+            <SelectValue>
+              {(value: string | null) =>
+                value ? SORT_LABELS[value as LeaderboardSort] : ""
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {(Object.keys(SORT_LABELS) as LeaderboardSort[]).map((k) => (

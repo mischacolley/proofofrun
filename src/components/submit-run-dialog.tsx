@@ -181,7 +181,12 @@ export function SubmitRunDialog({ runners }: { runners: Runner[] }) {
               <Label>Runner</Label>
               <Select value={runnerId} onValueChange={(v) => setRunnerId(v ?? "")}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Who's running?" />
+                  <SelectValue placeholder="Who's running?">
+                    {(value: string | null) => {
+                      const r = runners.find((x) => x.id === value);
+                      return r ? `${r.emoji} ${r.name}` : "Who's running?";
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {runners.map((r) => (
